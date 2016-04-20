@@ -1,18 +1,14 @@
----
-title: "Forecasting Case Study"
-author: "Lefteris Nikolidakis"
-date: "20 March 2016"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Forecasting Case Study
+Lefteris Nikolidakis  
+20 March 2016  
 
 <br>
 
 #### Data Import
 
 
-```{r results="hide", message=FALSE}
+
+```r
 setwd("E:/Lefteris/GFK test")
 require(XLConnect)
 wb <- loadWorkbook("GfK Boutique Forecasting Case Study.xlsx")
@@ -22,11 +18,7 @@ SalesData <- readWorksheet(wb, sheet = 3, header = TRUE)
 names(SalesData) <- c("Dates", "Sales_A", "Sales_B","Sales_C", "Sales_D", "Sales_E")
 ```
 
-```{r echo=FALSE, results="hide", message=FALSE}
-SalesData[73:84,] <- NA
-require(chron)
-SalesData$Dates <- as.POSIXct(seq.dates("01/01/09", "12/01/15", by = "months"))
-```
+
 _____________________________________________________________________________________
 
 #### *<b><font face="Times New Roman" size="4">Question 1:</font></b>* 
@@ -36,32 +28,33 @@ ________________________________________________________________________________
 
 In my time series analysis I chose to forecast the Sales for Country A. When looking at the time series plot below for the chosen variable, we notice a curved increasing trend over time and subsequent seasonal variations.  
 
-```{r echo=FALSE}
-SalesData$Order <- seq(1:length(SalesData[,1]))
 
-SalesData$Year <- as.factor(format(SalesData$Dates, "%Y"))
-breaks <- SalesData[seq(1,61,by=12),"Order"]
-labels <- as.character(SalesData[seq(1,61,by=12),"Year"])
-```
 
-```{r message=FALSE, fig.width=6.8, fig.height=3.7, results="hide"}
+
+```r
 require(ggplot2)
 ggplot(SalesData[1:72,], aes(x=Order, y=Sales_A)) + geom_point(alpha=0.5) + geom_line(alpha=0.4) + geom_smooth(se = FALSE) + ylab("Country A Sales") +ggtitle("Sales for Country A over time") + scale_x_continuous(breaks=breaks, labels=labels)
 ```
 
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-4-1.png)
+
 As well as looking at the time plot of the data, the ACF plot also indicates non-stationary time series since the coefficients decrease very slowly.
 
-```{r message=FALSE, results="hide"}
+
+```r
 ## Transform data set to time series object
 require(stats)
 require(forecast)
 TSData <- ts(data=SalesData$Sales_A[1:72], frequency = 12, start = c(2009, 1))
 ```
 
-```{r message=FALSE, fig.width=6.8, fig.height=3.7, results="hide"}
+
+```r
 require(ggfortify)
 autoplot(Acf(TSData, plot=FALSE)) + ggtitle("Autocorrelation coefficients of Sales")
 ```
+
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-6-1.png)
 
 _____________________________________________________________________________________
 
@@ -72,15 +65,15 @@ ________________________________________________________________________________
 
 The time series graph below shows the point forecasts for 2015. The forecasts were derived after employing a **Seasonal Autoregressive Integrated model** on our Sales time series for Country A, which is a forecasting techique that simultaneously estimates non-stationary trends and seasonal patterns.
 
-```{r echo=FALSE, fig.width=7.8, fig.height=4.5, message=FALSE, warning=FALSE}
-Arima <- arima(TSData, order=c(0,1,0), seasonal=list(order=c(2,1,0), frequency=c(12,1,0)))
-ForecastARI <- forecast(Arima, level = 95, h = 12)
-```
 
-```{r, fig.width=7.8, fig.height=4.5, results="hide", message=FALSE}
+
+
+```r
 require(ggfortify)
 autoplot(ForecastARI) + ylab("Sales for Country A") + ggtitle("ARIMA - Forecasts for Jan 15 - Dec 15")
 ```
+
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-8-1.png)
 
 
 _____________________________________________________________________________________
@@ -111,27 +104,34 @@ THe I(1) process is <b><i>Y<sub>t</sub> - Y<sub>t-1</sub> = DY<sub>t</sub></i></
 
 The seasonal plot below demonstrates how sales behave each month against the individual Years (seasons). It is clear that each month's value is highly correlated with all previous years' values in the respective month.
 
-```{r message=FALSE, fig.width=7.8, fig.height=3.7}
+
+```r
 SalesData$Month <- as.factor(format(SalesData$Dates, "%m"))
 
 ggplot(SalesData[1:72,], aes(Month, Sales_A)) + geom_line(aes(group=Year,  colour=Year)) + geom_point(aes(group=Year, colour=Year)) + xlab("Months") + ylab("Sales Volume") + ggtitle("Seasonal Plot - Sales each Year")
 ```
 
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-9-1.png)
+
 When comparing the forecasted values from the seasonal AR(1) model with the real sale values it is confirmed that the seasonal pattern explains the variability quite well.
 
 
-```{r message=FALSE, results="hide"}
+
+```r
 SalesData$SeasAut <- NA
 SalesData$SeasAut[13:length(SalesData[,1])] <- SalesData$Sales_A[1:72]
 
 FIt <- lm(Sales_A ~ 0 + SeasAut, data=SalesData)
 ```
 
-```{r message=FALSE, warning=FALSE, fig.width=8.4, fig.height=3.7}
+
+```r
 SalesData$Forec_SeasAut <- FIt$coef[1]*SalesData$SeasAut
 
 ggplot(SalesData, aes(x=Dates)) + geom_line(aes(y=Sales_A, colour="Sales_A")) + geom_line(aes(y=Forec_SeasAut, colour="Forec_SeasAut")) + xlab("Fitted Sales") + ylab("\n\nReal Sales") + ggtitle("Seasonal Autoregression - Forecasted vs Real Sales") + scale_color_manual(values=c("red", "black"))
 ```
+
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-11-1.png)
 
 <br>
 
@@ -139,24 +139,33 @@ ggplot(SalesData, aes(x=Dates)) + geom_line(aes(y=Sales_A, colour="Sales_A")) + 
 
 The time series plot below demonstrates the *integrated of order one* residuals which are the sales points after removing the non-stationary increasing trend. 
 
-```{r message=FALSE, fig.width=7.7, fig.height=3.7}
+
+```r
 autoplot(diff(TSData,1)) + ggtitle("De-trended Sales over time") + ylab("Residuals")
 ```
+
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-12-1.png)
 
 We notice that even if differencing stabilizes the mean of the time series, the variance of the residuals is still increasing over time. 
 
 To address the observed heteroscedasticity I could have applied log-transformation on the series. Nevertheless, as shown afterwards, the instability of the variance can be controlled by the seasonal AR process.
 
-```{r message=FALSE, fig.width=7.7, fig.height=3.7}
+
+```r
 autoplot(diff(log(TSData),1)) + ggtitle("De-trended Log-transformed Sales over time") + ylab("Residuals")
 ```
+
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-13-1.png)
 
 Now that we removed the trend pattern, we can re-check the lagged autocorrelation coefficients. 
 The autocorrelation plot of the differenced Sales below, shows that 1st order differencing didn't address the seasonality. Also the highest coefficient is of lag 12, which justifies the seasonal auttoregressive pattern we identified previously.
 
-```{r message=FALSE, fig.width=7.7, fig.height=3.7}
+
+```r
 autoplot(Acf(diff(TSData,1), plot=FALSE)) + ggtitle("Autocorrelation coefficients of De-Trended Sales")
 ```
+
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-14-1.png)
 
 <br>
 
@@ -165,9 +174,29 @@ autoplot(Acf(diff(TSData,1), plot=FALSE)) + ggtitle("Autocorrelation coefficient
 The model that I applied for forecasting the 2005 sales was the Seasonal ARIMA(0,1,0)(1,1,0) which denotes an AR model with 1 seasonal autoregressive lag and a difference in the order of 1. <br>
 The summary of my chosen model is shown below:
 
-```{r}
 
+```r
 summary(Arima)
+```
+
+```
+## 
+## Call:
+## arima(x = TSData, order = c(0, 1, 0), seasonal = list(order = c(2, 1, 0), frequency = c(12, 
+##     1, 0)))
+## 
+## Coefficients:
+##         sar1    sar2
+##       0.4965  0.0620
+## s.e.  0.1566  0.1857
+## 
+## sigma^2 estimated as 0.04172:  log likelihood = 7.98,  aic = -9.95
+## 
+## Training set error measures:
+##                      ME      RMSE       MAE       MPE     MAPE      MASE
+## Training set 0.01303818 0.1849059 0.1230339 0.3007038 7.138826 0.3950885
+##                    ACF1
+## Training set -0.1954534
 ```
 
 Below are some basic diagnostic plots for our model that assess the validity of the model and the outcomes are the following:
@@ -180,7 +209,8 @@ Below are some basic diagnostic plots for our model that assess the validity of 
 
 4. The variance of the residuals is higher in the latest part of the series (2013-2015) but in insignificant level. 
 
-```{r message=FALSE, fig.width=8.2, fig.height=3.7}
+
+```r
 Fitted <- ForecastARI$fitted
 Real <- SalesData$Sales_A[1:72]
 Errors <- ForecastARI$residuals
@@ -190,18 +220,10 @@ temp <- data.frame(Dates, Real, Fitted, Errors)
 ggplot(temp[13:72,], aes(Dates)) + geom_line(aes(y=Real, colour="Real")) + geom_line(aes(y=Fitted, colour="Fitted")) + ggtitle("Seasonal ARIMA - Fitted vs Real values over the sample period") + ylab("Sales\n") + scale_color_manual(values=c("red", "black"))
 ```
 
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-16-1.png)
 
-```{r fig.width=5, fig.width=7.3, fig.height=3.7, echo=FALSE, message=FALSE}
-require(gridExtra)
-plot1 <- ggplot(temp,aes(y=Real, x=Fitted)) + geom_point() + geom_abline(slope=1, size=0.8, colour="red", alpha=0.3) + expand_limits(y=c(0,7.5), x=c(0,7.5))
-plot2 <- ggplot(temp, aes(Errors/sd(Errors))) + geom_histogram(bins=15) + xlab("Sdandarised Residuals")
 
-grid.arrange(plot1, plot2, widths = c(2,2) , heights=2 , ncol=2, nrow=1)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-17-1.png)![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-17-2.png)
 
-ggplot(temp[13:72,], aes(Dates, Errors)) + geom_line() + ylab("Sales for Country A") + ggtitle("Errors plot")
-```
-
-```{r  fig.height=3.7, fig.width=7.3, message=FALSE, echo = FALSE}
-autoplot(Acf(Errors, plot=FALSE)) + ggtitle("Autocorrelation coefficients of residuals")
-```
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-18-1.png)
 <br>
