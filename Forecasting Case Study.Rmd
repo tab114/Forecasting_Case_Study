@@ -11,11 +11,13 @@ output:
 
 #### Data Import
 
+```{r echo=FALSE, results='hide'}
+setwd("E:/Lefteris/Forecasting Case Study")
+```
 
 ```{r results="hide", message=FALSE}
-setwd("E:/Lefteris/GFK test")
 require(XLConnect)
-wb <- loadWorkbook("GfK Boutique Forecasting Case Study.xlsx")
+wb <- loadWorkbook("Forecasting Case Study.xlsx")
 
 ## Created an extra sheet3 in the Excel file already with the Data transposed
 SalesData <- readWorksheet(wb, sheet = 3, header = TRUE)

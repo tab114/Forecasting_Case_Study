@@ -8,10 +8,11 @@ Lefteris Nikolidakis
 
 
 
+
+
 ```r
-setwd("E:/Lefteris/GFK test")
 require(XLConnect)
-wb <- loadWorkbook("GfK Boutique Forecasting Case Study.xlsx")
+wb <- loadWorkbook("Forecasting Case Study.xlsx")
 
 ## Created an extra sheet3 in the Excel file already with the Data transposed
 SalesData <- readWorksheet(wb, sheet = 3, header = TRUE)
@@ -36,7 +37,7 @@ require(ggplot2)
 ggplot(SalesData[1:72,], aes(x=Order, y=Sales_A)) + geom_point(alpha=0.5) + geom_line(alpha=0.4) + geom_smooth(se = FALSE) + ylab("Country A Sales") +ggtitle("Sales for Country A over time") + scale_x_continuous(breaks=breaks, labels=labels)
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-4-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-5-1.png)
 
 As well as looking at the time plot of the data, the ACF plot also indicates non-stationary time series since the coefficients decrease very slowly.
 
@@ -54,7 +55,7 @@ require(ggfortify)
 autoplot(Acf(TSData, plot=FALSE)) + ggtitle("Autocorrelation coefficients of Sales")
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-6-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-7-1.png)
 
 _____________________________________________________________________________________
 
@@ -73,7 +74,7 @@ require(ggfortify)
 autoplot(ForecastARI) + ylab("Sales for Country A") + ggtitle("ARIMA - Forecasts for Jan 15 - Dec 15")
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-8-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-9-1.png)
 
 
 _____________________________________________________________________________________
@@ -111,7 +112,7 @@ SalesData$Month <- as.factor(format(SalesData$Dates, "%m"))
 ggplot(SalesData[1:72,], aes(Month, Sales_A)) + geom_line(aes(group=Year,  colour=Year)) + geom_point(aes(group=Year, colour=Year)) + xlab("Months") + ylab("Sales Volume") + ggtitle("Seasonal Plot - Sales each Year")
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-9-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-10-1.png)
 
 When comparing the forecasted values from the seasonal AR(1) model with the real sale values it is confirmed that the seasonal pattern explains the variability quite well.
 
@@ -131,7 +132,7 @@ SalesData$Forec_SeasAut <- FIt$coef[1]*SalesData$SeasAut
 ggplot(SalesData, aes(x=Dates)) + geom_line(aes(y=Sales_A, colour="Sales_A")) + geom_line(aes(y=Forec_SeasAut, colour="Forec_SeasAut")) + xlab("Fitted Sales") + ylab("\n\nReal Sales") + ggtitle("Seasonal Autoregression - Forecasted vs Real Sales") + scale_color_manual(values=c("red", "black"))
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-11-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-12-1.png)
 
 <br>
 
@@ -144,7 +145,7 @@ The time series plot below demonstrates the *integrated of order one* residuals 
 autoplot(diff(TSData,1)) + ggtitle("De-trended Sales over time") + ylab("Residuals")
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-12-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-13-1.png)
 
 We notice that even if differencing stabilizes the mean of the time series, the variance of the residuals is still increasing over time. 
 
@@ -155,7 +156,7 @@ To address the observed heteroscedasticity I could have applied log-transformati
 autoplot(diff(log(TSData),1)) + ggtitle("De-trended Log-transformed Sales over time") + ylab("Residuals")
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-13-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-14-1.png)
 
 Now that we removed the trend pattern, we can re-check the lagged autocorrelation coefficients. 
 The autocorrelation plot of the differenced Sales below, shows that 1st order differencing didn't address the seasonality. Also the highest coefficient is of lag 12, which justifies the seasonal auttoregressive pattern we identified previously.
@@ -165,7 +166,7 @@ The autocorrelation plot of the differenced Sales below, shows that 1st order di
 autoplot(Acf(diff(TSData,1), plot=FALSE)) + ggtitle("Autocorrelation coefficients of De-Trended Sales")
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-14-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-15-1.png)
 
 <br>
 
@@ -220,10 +221,10 @@ temp <- data.frame(Dates, Real, Fitted, Errors)
 ggplot(temp[13:72,], aes(Dates)) + geom_line(aes(y=Real, colour="Real")) + geom_line(aes(y=Fitted, colour="Fitted")) + ggtitle("Seasonal ARIMA - Fitted vs Real values over the sample period") + ylab("Sales\n") + scale_color_manual(values=c("red", "black"))
 ```
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-16-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-17-1.png)
 
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-17-1.png)![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-17-2.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-18-1.png)![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-18-2.png)
 
-![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-18-1.png)
+![](Forecasting_Case_Study_files/figure-html/unnamed-chunk-19-1.png)
 <br>

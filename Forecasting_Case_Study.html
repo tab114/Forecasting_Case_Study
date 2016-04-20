@@ -119,9 +119,8 @@ $(document).ready(function () {
 <p><br></p>
 <div id="data-import" class="section level4">
 <h4>Data Import</h4>
-<pre class="r"><code>setwd(&quot;E:/Lefteris/GFK test&quot;)
-require(XLConnect)
-wb &lt;- loadWorkbook(&quot;GfK Boutique Forecasting Case Study.xlsx&quot;)
+<pre class="r"><code>require(XLConnect)
+wb &lt;- loadWorkbook(&quot;Forecasting Case Study.xlsx&quot;)
 
 ## Created an extra sheet3 in the Excel file already with the Data transposed
 SalesData &lt;- readWorksheet(wb, sheet = 3, header = TRUE)
